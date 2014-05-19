@@ -26,6 +26,7 @@ else:
 if CONFIG['OS_TARGET'] == 'Android':
     SOURCES += [
         'BionicGlue.cpp',
+        'OpenHook.cpp',
     ]
 
 if CONFIG['OS_TARGET'] == 'WINNT':
@@ -83,3 +84,9 @@ if CONFIG['MOZ_WIDGET_TOOLKIT'] == 'gonk':
     ]
 
 DEFINES['IMPL_MFBT'] = True
+
+LOCAL_INCLUDES += [
+    "/security/sandbox/linux/openlist/"
+    ] 
+
+USE_LIBS += ['openlist']

@@ -99,6 +99,7 @@
 #include "PermissionMessageUtils.h"
 
 #if defined(MOZ_WIDGET_ANDROID)
+#include <android/log.h>
 #include "APKOpen.h"
 #endif
 
@@ -988,8 +989,9 @@ ContentChild::CleanUpSandboxEnvironment()
 bool
 ContentChild::RecvSetProcessSandbox()
 {
-    // We may want to move the sandbox initialization somewhere else
-    // at some point; see bug 880808.
+  __android_log_print(ANDROID_LOG_WARN, "Sandbox", "in ContentChild:RecvSetProcessSandbox");
+  // We may want to move the sandbox initialization somewhere else
+  // at some point; see bug 880808.
 #if defined(MOZ_CONTENT_SANDBOX)
 #if defined(XP_LINUX)
 #if defined(MOZ_WIDGET_GONK) && ANDROID_VERSION >= 19

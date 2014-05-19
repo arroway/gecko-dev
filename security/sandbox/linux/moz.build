@@ -28,6 +28,7 @@ DISABLE_STL_WRAPPING = True
 
 LOCAL_INCLUDES += ['/security/sandbox/chromium/base/shim']
 LOCAL_INCLUDES += ['/security/sandbox/chromium']
+LOCAL_INCLUDES += ['/security/sandbox/linux/openlist']
 LOCAL_INCLUDES += ['/security/sandbox']
 
 if CONFIG['OS_TARGET'] != 'Android':
@@ -39,3 +40,5 @@ if CONFIG['OS_TARGET'] != 'Android':
 DIRS += [
     'glue',
 ]
+
+USE_LIBS += ['openlist']

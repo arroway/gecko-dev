@@ -9,10 +9,10 @@
 #include "base/basictypes.h"
 
 #include "ContentParent.h"
-
 #if defined(ANDROID) || defined(LINUX)
 # include <sys/time.h>
 # include <sys/resource.h>
+#include <android/log.h>
 #endif
 
 #ifdef MOZ_WIDGET_GONK
@@ -2102,12 +2102,15 @@ ContentParent::InitInternal(ProcessPriority aInitialPriority,
 
 #ifdef MOZ_CONTENT_SANDBOX
     bool shouldSandbox = true;
+    __android_log_print(ANDROID_LOG_WARN, "Sandbox", "shouldSandbox= %d", shouldSandbox);
 #ifdef MOZ_NUWA_PROCESS
     if (IsNuwaProcess()) {
         shouldSandbox = false;
     }
 #endif
-    if (shouldSandbox && !SendSetProcessSandbox()) {
+    bool test = SendSetProcessSandbox();
+    __android_log_print(ANDROID_LOG_WARN, "Sandbox", "SendSetProcessSandbox= %d", test);
+    if (shouldSandbox && !test) {
         KillHard();
     }
 #endif

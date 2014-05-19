@@ -33,6 +33,13 @@
 
 #include "linux_seccomp.h"
 #include "SandboxFilter.h"
+#include "OpenWhitelist.h"
+
+#ifdef MOZ_LOGGING
+#define FORCE_PR_LOG 1
+#endif
+#include "prlog.h"
+#include "prenv.h"
 
 // See definition of SandboxDie, below.
 #include "sandbox/linux/seccomp-bpf/die.h"
@@ -139,10 +146,9 @@ Reporter(int nr, siginfo_t *info, void *void_context)
   }
 #endif
 
-  SANDBOX_LOG_ERROR("seccomp sandbox violation: pid %d, syscall %lu,"
-                    " args %lu %lu %lu %lu %lu %lu.  Killing process.",
-                    pid, syscall_nr,
-                    args[0], args[1], args[2], args[3], args[4], args[5]);
+  SANDBOX_LOG_ERROR("seccomp sandbox violation: pid %d, syscall %lu, args %08X %08X %lu"
+            " %lu %lu %lu.  Killing process.", pid, syscall_nr,
+            args[0], args[1], args[2], args[3], args[4], args[5]);
 
   // Bug 1017393: record syscall number somewhere useful.
   info->si_addr = reinterpret_cast<void*>(syscall_nr);
@@ -403,6 +409,7 @@ BroadcastSetThreadSandbox(SandboxType aType)
   unused << closedir(taskdp);
   // And now, deprivilege the main thread:
   SetThreadSandbox();
+  setenv("CONTENT_IS_SANDBOXED", "1", 1);
 }
 
 // Common code for sandbox startup.
@@ -419,6 +426,24 @@ SetCurrentProcessSandbox(SandboxType aType)
 }
 
 #ifdef MOZ_CONTENT_SANDBOX
+
+int MprotectOpenWhitelist(void)
+{
+
+  if (InitWhitelistAddresses()) {
+    return 1;
+  }
+
+  //TODO: mprotect ranges of addresses
+  //+ blacklist mprotect, mmap, etc, on these ranges 
+  /*if (!mprotect(openAlignedWhitelist, pagesize, PROT_WRITE|PROT_EXEC)) {
+    LOG_ERROR("mprotect failed");
+    return 1;
+  }*/
+
+  return 0;
+}
+
 /**
  * Starts the seccomp sandbox for a content process.  Should be called
  * only once, and before any potentially harmful content is loaded.
@@ -432,6 +457,10 @@ SetContentProcessSandbox()
     return;
   }
 
+  if (MprotectOpenWhitelist()) {
+    SANDBOX_LOG_ERROR("mprotecting open whitelist memory failed\n");    
+  }
+  
   SetCurrentProcessSandbox(kSandboxContentProcess);
 }
 
@@ -458,8 +487,6 @@ void
 SetMediaPluginSandbox(const char *aFilePath)
 {
   if (gSandboxFlags.isDisabledForGMP) {
-    return;
-  }
 
   if (aFilePath) {
     gMediaPluginFilePath = strdup(aFilePath);

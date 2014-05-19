@@ -8,6 +8,7 @@ if CONFIG['LIBXUL_SDK']:
 
 if CONFIG['MOZ_SANDBOX']:
     add_tier_dir('sandbox', 'security/sandbox')
+    add_tier_dir('sandbox2', 'security/sandbox/linux/openlist')
 
 # Depends on NSS and NSPR, and must be built after sandbox or else B2G emulator
 # builds fail.

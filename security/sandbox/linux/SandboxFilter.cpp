@@ -4,8 +4,10 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+#include "Sandbox.h"
 #include "SandboxFilter.h"
 #include "SandboxAssembler.h"
+#include "OpenWhitelist.h"
 
 #include "linux_seccomp.h"
 #include "linux_syscalls.h"
@@ -22,17 +24,18 @@
 #include <time.h>
 #include <unistd.h>
 
-namespace mozilla {
+#include <android/log.h>
 
+namespace mozilla {
+#if defined(ANDROID)
+#define LOG_ERROR(args...) __android_log_print(ANDROID_LOG_ERROR, "Sandbox", ## args)
+#endif
 class SandboxFilterImpl : public SandboxAssembler
 {
 public:
   virtual void Build() = 0;
   virtual ~SandboxFilterImpl() { }
 };
-
-// Some helper macros to make the code that builds the filter more
-// readable, and to help deal with differences among architectures.
 
 #define SYSCALL_EXISTS(name) (defined(__NR_##name))
 
@@ -183,7 +186,35 @@ SandboxFilterImplContent::Build() {
   Allow(SYSCALL_LARGEFILE(lstat, lstat64));
   Allow(SOCKETCALL(socketpair, SOCKETPAIR));
   Deny(EACCES, SOCKETCALL(socket, SOCKET));
-  Allow(SYSCALL(open));
+  //XXX: ugly
+  Allow(SYSCALL_WITH_ARG(open, 0, uint32_t(AlignedOpenWhitelistAddresses[0])));
+  Allow(SYSCALL_WITH_ARG(open, 0, uint32_t(AlignedOpenWhitelistAddresses[1])));
+  Allow(SYSCALL_WITH_ARG(open, 0, uint32_t(AlignedOpenWhitelistAddresses[2])));
+  Allow(SYSCALL_WITH_ARG(open, 0, uint32_t(AlignedOpenWhitelistAddresses[3])));
+  Allow(SYSCALL_WITH_ARG(open, 0, uint32_t(AlignedOpenWhitelistAddresses[4])));
+  Allow(SYSCALL_WITH_ARG(open, 0, uint32_t(AlignedOpenWhitelistAddresses[5])));
+  Allow(SYSCALL_WITH_ARG(open, 0, uint32_t(AlignedOpenWhitelistAddresses[6])));
+  Allow(SYSCALL_WITH_ARG(open, 0, uint32_t(AlignedOpenWhitelistAddresses[7])));
+  Allow(SYSCALL_WITH_ARG(open, 0, uint32_t(AlignedOpenWhitelistAddresses[8])));
+  Allow(SYSCALL_WITH_ARG(open, 0, uint32_t(AlignedOpenWhitelistAddresses[9])));
+  Allow(SYSCALL_WITH_ARG(open, 0, uint32_t(AlignedOpenWhitelistAddresses[10])));
+  Allow(SYSCALL_WITH_ARG(open, 0, uint32_t(AlignedOpenWhitelistAddresses[11])));
+  Allow(SYSCALL_WITH_ARG(open, 0, uint32_t(AlignedOpenWhitelistAddresses[12])));
+  Allow(SYSCALL_WITH_ARG(open, 0, uint32_t(AlignedOpenWhitelistAddresses[13])));
+  Allow(SYSCALL_WITH_ARG(open, 0, uint32_t(AlignedOpenWhitelistAddresses[14])));
+  Allow(SYSCALL_WITH_ARG(open, 0, uint32_t(AlignedOpenWhitelistAddresses[15])));
+  Allow(SYSCALL_WITH_ARG(open, 0, uint32_t(AlignedOpenWhitelistAddresses[16])));
+  Allow(SYSCALL_WITH_ARG(open, 0, uint32_t(AlignedOpenWhitelistAddresses[17])));
+  Allow(SYSCALL_WITH_ARG(open, 0, uint32_t(AlignedOpenWhitelistAddresses[18])));
+  Allow(SYSCALL_WITH_ARG(open, 0, uint32_t(AlignedOpenWhitelistAddresses[19])));
+  Allow(SYSCALL_WITH_ARG(open, 0, uint32_t(AlignedOpenWhitelistAddresses[20])));
+  Allow(SYSCALL_WITH_ARG(open, 0, uint32_t(AlignedOpenWhitelistAddresses[21])));
+  Allow(SYSCALL_WITH_ARG(open, 0, uint32_t(AlignedOpenWhitelistAddresses[22])));
+  Allow(SYSCALL_WITH_ARG(open, 0, uint32_t(AlignedOpenWhitelistAddresses[23])));
+  Allow(SYSCALL_WITH_ARG(open, 0, uint32_t(AlignedOpenWhitelistAddresses[24])));
+  Allow(SYSCALL_WITH_ARG(open, 0, uint32_t(AlignedOpenWhitelistAddresses[25])));
+  //Allow(SYSCALL(open));
+
   Allow(SYSCALL(readlink)); /* Workaround for bug 964455 */
   Allow(SYSCALL(prctl));
   Allow(SYSCALL(access));
